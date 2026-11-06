@@ -1,137 +1,172 @@
-# Xbox下载助手
-[English](https://github.com/skydevil88/XboxDownload/blob/master/README-EN.md)
+# Xbox Download Assistant (XboxDownload)
 
-Target Framework: .NET 10.0, Avalonia 12
+Target framework: .NET 10.0, Avalonia 12
 
-获取微软商店应用游戏下载链接
+> **Before you run it:** this tool needs administrator/root rights and changes your DNS/hosts settings.
+> Read [SECURITY.md](SECURITY.md) and [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) first, and prefer building from source
+> (see [Building](#building)) over downloading binaries from third parties.
+
+Get Microsoft Store game download links
 ---
-![图0](images/Store.gif)
-网页版商店：https://xbox.skydevil.xyz
+![Store](images/EN/Store.gif)
 
-使用PC下载Xbox主机游戏：https://www.bilibili.com/video/BV1CN4y197Js
+Web store: https://xbox.skydevil.xyz
 
-一键解决EA下载速度慢：https://www.bilibili.com/video/BV1KC4y1i7ZK
+Download Xbox console games with a PC: https://www.youtube.com/watch?v=3F499kh_jfk
 
-使用说明
+Download the app: https://github.com/skydevil88/XboxDownload/releases
+
+Overview
 ---
-Xbox主机是根据使用者IP分配游戏下载域名，国内IP使用assets1.xboxlive.cn，有国内CDN服务器，下载速度快（冷门游戏没有缓存除外）。国外IP使用assets1.xboxlive.com，没有国内CDN服务器，需要连接到国外，下载速度慢。国内用户使用了加速器或者代理软件，会被微软判断为国外用户并被分配使用com下载域名。
+Xbox consoles are assigned a download domain according to the user's IP address.
+Mainland-China IPs get `assets1.xboxlive.cn`, which has local CDN servers and is fast (except for unpopular games that are not cached).
+Overseas IPs get `assets1.xboxlive.com`, which has no China CDN, so traffic leaves the country and is slow.
+If a user in China uses an accelerator or proxy, Microsoft treats them as an overseas user and assigns the `.com` domain.
 
+**How the speed-up works:** the app redirects the Xbox download hosts `assets1.xboxlive.com` (and friends) to `assets1.xboxlive.cn` (note 1),
+pinning downloads to servers in China. This fixes slow downloads over the international domain, and the same mechanism also accelerates
+downloads from the PC Microsoft Store, PlayStation, Nintendo Switch, EA, Battle.net (international), Epic, Ubisoft, Riot Games, Rockstar Games and more.
 
-本软件提速原理，把 Xbox 下载链接 assets1.xboxlive.com 跳转到 assets1.xboxlive.cn 上（注1），锁定在国内服务器下载，解决使用国际域名下载速度过慢问题，并且能同时支持 PC 微软商店、 PS、 NS、 EA、 战网国际服、 Epic、 育碧、 Riot Games、 Rockstar Games 等游戏下载加速。
+**Note 1: the `.com` → `.cn` redirect is only enabled when the UI language is Simplified Chinese.**
+Outside China you can still use the app to find the fastest CDN IP for your location (Speed Test), pin hosts, and copy download links.
 
-**注1：该跳转功能仅在界面语言为简体中文时启用。**
+See [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) for diagrams of the architecture.
 
-下载链接
-```
-Github: https://github.com/skydevil88/XboxDownload/releases
-百度网盘: https://pan.baidu.com/s/1ZqBvWjpGYZXBL8WaitMLCQ?pwd=q3cp 提取码：q3cp
-源码：https://github.com/skydevil88/XboxDownload
-```
-![图1](images/Consoles1.png)
-
-1.使用设置（Nintendo Switch、PlayStation 使用方法同理）
+Screenshots
 ---
-Xbox正在下载，请先暂停，完成设置后再继续。
+**Service** – DNS + HTTP(S) listener, and uploading games from the PC to the Xbox
 
-一、启动下载助手，选中测速-导入IP，找你家附近IP测试速度（可以使用搜索位置功能），右键使用指定IP。
+![Service](images/EN/Service1.png)
+![Service](images/EN/Service2.png)
 
-![图2](images/SpeedTest.png)
+**Speed Test**
 
-二、本机IP选择跟Xbox同一IP段，一般是192.168.x.x，我这里是192.168.50.5，请自行判断选择。确认勾选 1.DNS 服务，2.HTTP(S) 服务 这两项，然后点击 开始监听。
+![Speed test](images/EN/SpeedTest.png)
 
-![图3](images/Listening.png)
+**Hosts**
 
+![Hosts](images/EN/Hosts.png)
 
-三、打开XBOX 设置->常规->网络设置->高级设置->DNS 设置->手动 把 主DNS 设为PC电脑IP（Xbox下载助手左下角 本机IP），辅助DNS留空。(PC Xbox App 用户此步骤省略)
+**CDN**
 
-![图4](images/Consoles2.png)
+![CDN](images/EN/Cdn.png)
 
-注意，如果你的Xbox正在使用IPv6联网， 需要在路由器中关闭IPv6功能。
+**Storage**
 
-![图5](images/Consoles3.png)
+![Storage](images/EN/Storage.png)
 
-现在可以开始愉快地下载了。
+**About**
 
-下载完成后记得把Xbox DNS改回自动获取，否则Xbox下载助手关闭后没法联网。
+![About](images/EN/About.png)
 
-
-其它问题：
-
-一、	没有日志，第一种情况本机IP没有选择正确，请重新选择；第二种情况被电脑网络防火墙阻止，请关闭电脑网络防火墙，还有各种电脑管家之类软件。
-
-二、	检测端口被占用，通常按是强制结束就能正常启动，不能结束可以用命令“netstat -an”查看占用端口程序，如何停止请自行上网搜索。
-
-三、	Xbox通过电脑WiFi热点连接网络需要以下设置，1、监听IP选择“任意IP”，2、取消启用DNS 服务，4、取消设置本机 DNS。
-
-Xbox主机DNS可以不用设置，直接自动获取。
-
-![图6](images/Hotspot.png)
-
-
-2.PC下载回传（PC XGP、PlayStation、EA同样适用）
+Building
 ---
-有两种方法回传Xbox，首先使用下载助手监听到游戏下载地址（勾选显示下载链接），暂停下载，右键复制下载地址，然后使用PC下载工具把文件下载回来。
+Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download). The repository also contains a GitHub Actions workflow
+(`.github/workflows/build.yml`) that builds Windows/Linux/macOS packages; run it from the **Actions** tab (**Run workflow**) and download the
+artifacts. See [XboxDownload/Scripts/publish.md](XboxDownload/Scripts/publish.md) for the local publish scripts.
 
-PC XGP游戏也可以用此方法监听到下载地址，然后使用下载工具下载，完成后在 工具->安装微软商店游戏和应用 中安装。
+```bash
+dotnet build XboxDownload.sln -c Release
+```
 
-![图7](images/Gamelink.png)
-
-方法一：本地上传
-
-把本地上传文件夹指向下载文件夹位置，勾选本地上传后启动监听，Xbox重新下载，就可以直接从PC上传Xbox。
-
-![图8](images/LocalUpload.png)
-
-方法二：硬盘导入
-
-Xbox外置移动硬盘接到PC上，然后在下载助手转换成PC模式，可能需要关闭杀毒软件，接着把下载游戏文件复制进去重命名为Content ID（也可以直接把游戏下载到移动硬盘根目录，省去复制这一步），完成后转换回Xbox模式。把刚才Xbox暂停下载的游戏删除，外置移动硬盘接回Xbox，开机联网（必须联网），设置-系统-存储，选择移动硬盘，把游戏移动到内部硬盘。注意不要在移动硬盘中启动游戏，否则游戏会重新下载，应用不支持硬盘方法导入。
-
-重命名Content ID方法：硬盘-文件信息-本地文件-浏览，选择文件，然后点击重命名本地文件。
-
-![图9](images/Storage1.png)
-
-![图10](images/Storage2.png)
-
-![图11](images/Storage3.png)
-
-
-3.不想开电脑下载
+1. Basic setup (Nintendo Switch and PlayStation work the same way)
 ---
-OpenWrt 安装 Lighttpd 或者 Nginx，使用URL重写跳转国内CDN服务器加速下载
-https://github.com/skydevil88/XboxDownload/blob/master/README_OpenWrt.md
+If the Xbox is downloading, pause the download first and resume it after the setup is complete.
 
+**Step 1.** Start the app, open **Speed Test → Import IP**, look for IPs near you (the *search location* feature helps), then right-click and choose **Use this IP**.
 
-其它路由器如果支持改Hosts，可以分别把 com 和cn 下载域名测速后找出最快IP写进Hosts 中，不管Xbox使用那个域名下载都能加速。
+![Step 2](images/SpeedTest.png)
 
-CN域名（可以使用Akamai IP，对于CDN没有缓存的老游戏、冷门游戏可能效果更佳）
+**Step 2.** Choose a **Local IP** in the same subnet as the Xbox (usually `192.168.x.x`; in the screenshot it is `192.168.50.5` – pick the right one for your network).
+Make sure **1. DNS service** and **2. HTTP(S) service** are ticked, then click **Start listening**.
+
+![Step 3](images/Listening.png)
+
+**Step 3.** On the Xbox open **Settings → General → Network settings → Advanced settings → DNS settings → Manual**, set the **primary DNS** to the PC's IP address
+(shown at the bottom left of the app as *Local IP*) and leave the secondary DNS empty. (PC Xbox App users can skip this step.)
+
+![Step 4](images/Consoles2.png)
+
+Note: if your Xbox uses IPv6, turn IPv6 off in the router.
+
+![Step 5](images/Consoles3.png)
+
+You can now download. When finished, **set the Xbox DNS back to automatic** – otherwise the Xbox has no internet once the app is closed.
+
+Troubleshooting:
+
+1. *No log output.* Either the wrong Local IP is selected (choose again) or a firewall/"PC manager" security suite is blocking the app – disable it.
+2. *Port in use.* Usually answering "Yes" to force-stop the other program works. Otherwise find the process with `netstat -an` and stop it yourself.
+3. *Xbox connected through the PC's Wi-Fi hotspot.* Set **Listening IP** to "Any IP", untick **DNS service**, and untick **Set local DNS**.
+   The Xbox DNS can then stay on automatic.
+
+![Hotspot](images/Hotspot.png)
+
+2. Uploading downloads from the PC to the Xbox (also works for PC Game Pass, PlayStation, EA)
+---
+There are two methods. First let the app capture the game's download URL (tick *Show download links*), pause the download, right-click and copy the URL, then download the file on the PC with a download manager.
+
+PC Game Pass games can be captured the same way; install them afterwards with **Tools → Install Microsoft Store games and apps**.
+
+![Game link](images/Gamelink.png)
+
+**Method 1 – local upload.** Point the *local upload folder* to the folder containing the downloaded files, tick *Local upload*, start listening and restart the download on the Xbox: the Xbox pulls the files straight from the PC.
+
+![Local upload](images/LocalUpload.png)
+
+**Method 2 – hard-drive import.** Connect the Xbox external drive to the PC and convert it to *PC mode* in the app (you may need to turn off your antivirus).
+Copy the game files onto it and rename them to the *Content ID* (or download straight into the drive's root to skip the copy), then convert it back to *Xbox mode*.
+Delete the paused game on the Xbox, plug the drive back in, power on **with internet access (required)**, open Settings → System → Storage, pick the drive and move the game to internal storage.
+Do not launch the game from the external drive (it would be downloaded again). Apps cannot be imported this way.
+
+How to rename to the Content ID: in the app go to *Drive → file info → local files → Browse*, select the file and click *Rename local file*.
+
+![Storage 1](images/Storage1.png)
+![Storage 2](images/Storage2.png)
+![Storage 3](images/Storage3.png)
+
+3. Without keeping a PC on
+---
+Install Lighttpd or Nginx on OpenWrt and use URL rewriting to redirect to the China CDN:
+[README_OpenWrt.md](README_OpenWrt.md)
+
+If another router lets you edit hosts, speed-test the `.com` and `.cn` download domains, find the fastest IP and put them into the hosts file; every download then benefits whichever domain the Xbox uses.
+
+CN domains (Akamai IPs can also be used; they may work better for old or unpopular games that the CDN has not cached):
 ```
-#第一组，主下载域名（PC主机共用）
-address=/assets1.xboxlive.cn/cn IP 或者 Akamai IP
-address=/assets2.xboxlive.cn/cn IP 或者 Akamai IP
-address=/d1.xboxlive.cn/cn IP 或者 Akamai IP
-address=/d2.xboxlive.cn/cn IP 或者 Akamai IP
+# Group 1: main download domains (shared by PC and consoles)
+address=/assets1.xboxlive.cn/<cn IP or Akamai IP>
+address=/assets2.xboxlive.cn/<cn IP or Akamai IP>
+address=/d1.xboxlive.cn/<cn IP or Akamai IP>
+address=/d2.xboxlive.cn/<cn IP or Akamai IP>
 
-#第二组，XboxOne部分老游戏下载域名，PC、主机新游戏都不再使用此域名。
-address=/dlassets.xboxlive.cn/cn IP 或者 Akamai IP
-address=/dlassets2.xboxlive.cn/cn IP 或者 Akamai IP
+# Group 2: download domains for some older Xbox One games (no longer used by new PC/console games)
+address=/dlassets.xboxlive.cn/<cn IP or Akamai IP>
+address=/dlassets2.xboxlive.cn/<cn IP or Akamai IP>
 
-#第三组，应用和部分PC游戏使用此域名下载
-#Xbox APP提示“此游戏不支持安装到特定文件夹。它将与其他Windows应用一起安装。”, 这些都是使用应用下载域名
-address=/dl.delivery.mp.microsoft.com/cn IP 或者 Akamai IP
-address=/tlu.dl.delivery.mp.microsoft.com /cn IP 或者 Akamai IP
+# Group 3: apps and some PC games use these domains.
+# The Xbox app says "This game doesn't support installing to a specific folder. It will be installed with other Windows apps." for these.
+address=/dl.delivery.mp.microsoft.com/<cn IP or Akamai IP>
+address=/tlu.dl.delivery.mp.microsoft.com/<cn IP or Akamai IP>
 ```
-COM域名（不能使用cn IP）
+COM domains (cn IPs cannot be used here):
 ```
-address=/assets1.xboxlive.com/Akamai IP
-address=/assets2.xboxlive.com/Akamai IP
-address=/xvcf1.xboxlive.com/Akamai IP
-address=/xvcf2.xboxlive.com/Akamai IP
-address=/d1.xboxlive.com/Akamai IP
-address=/d2.xboxlive.com/Akamai IP
-address=/dlassets.xboxlive.com/Akamai IP
-address=/dlassets2.xboxlive.com/Akamai IP
+address=/assets1.xboxlive.com/<Akamai IP>
+address=/assets2.xboxlive.com/<Akamai IP>
+address=/xvcf1.xboxlive.com/<Akamai IP>
+address=/xvcf2.xboxlive.com/<Akamai IP>
+address=/d1.xboxlive.com/<Akamai IP>
+address=/d2.xboxlive.com/<Akamai IP>
+address=/dlassets.xboxlive.com/<Akamai IP>
+address=/dlassets2.xboxlive.com/<Akamai IP>
 ```
 
-关于
+About
 ---
 ![About](images/About.png)
+
+Notes on language
+---
+The app ships with English (default), Simplified Chinese and Traditional Chinese UI packs (`XboxDownload/Resources/Languages`).
+The files in `IP/` are data files: their location labels are intentionally left in Chinese because the app matches against them
+(`IP/Translation.json` maps those Chinese names to English).

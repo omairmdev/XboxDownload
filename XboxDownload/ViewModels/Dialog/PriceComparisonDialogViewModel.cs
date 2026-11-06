@@ -43,59 +43,59 @@ public partial class PriceComparisonDialogViewModel : ObservableObject
         UseCurrencyCode = _storeViewModel.UseCurrencyCode;
         _productId = _storeViewModel.SelectedBundledIndex <= 0 ? _storeViewModel.GameData?.Products[0].ProductId : _storeViewModel.SelectedBundled?.ProductId;
 
-        // 要排除的 Language（根据货币或不支持的地区）
+        // Languages to exclude (by currency or unsupported regions)
         var excludedLanguages = new HashSet<string>
         {
-            // 列支敦士登 - 瑞士法郎
+            // Liechtenstein - Swiss franc
             "de-LI", 
 
-            // 欧元区国家（欧盟成员国，官方货币为欧元，语言代码）
-            // 16个欧盟成员国语言代码
-            "de-AT", // 奥地利
-            "nl-BE", // 比利时
-            "de-DE", // 德国
-            "fr-FR", // 法国
-            "fi-FI", // 芬兰
-            "nl-NL", // 荷兰
-            "pt-PT", // 葡萄牙
-            "sk-SK", // 斯洛伐克
-            "es-ES", // 西班牙
-            "el-GR", // 希腊
-            "it-IT", // 意大利
-            "en-IE", // 爱尔兰
-            "fr-LU", // 卢森堡（多语种，主要法语）
-            "mt-MT", // 马耳他（官方语言之一为马耳他语）
-            "en-CY", // 塞浦路斯（官方语言包括希腊语和土耳其语）
-            "et-EE", // 爱沙尼亚 
+            // Eurozone countries (EU members using the euro; language codes)
+            // Language codes of 16 EU member states
+            "de-AT", // Austria
+            "nl-BE", // Belgium
+            "de-DE", // Germany
+            "fr-FR", // France
+            "fi-FI", // Finland
+            "nl-NL", // Netherlands
+            "pt-PT", // Portugal
+            "sk-SK", // Slovakia
+            "es-ES", // Spain
+            "el-GR", // Greece
+            "it-IT", // Italy
+            "en-IE", // Ireland
+            "fr-LU", // Luxembourg (multilingual, mainly French)
+            "mt-MT", // Malta (Maltese is one of the official languages)
+            "en-CY", // Cyprus (official languages include Greek and Turkish)
+            "et-EE", // Estonia 
 
-            // 非欧盟使用欧元国家或地区语言代码
-            "ca-AD", // 安道尔
+            // Language codes of non-EU countries/regions that use the euro
+            "ca-AD", // Andorra
 
-            // 美元区（主要为小国家或属地）
+            // US-dollar area (mostly small countries or territories)
             "ar-AE", "ru-RU",
 
             "fa-AF", "en-AG", "en-AI", "sq-AL", "hy-AM", "pt-AO", "en-AQ", "en-AS", "nl-AW","sv-AX", "az-AZ",
             "bs-BA", "en-BB", "fr-BF", "fr-BI", "fr-BJ", "fr-BL", "en-BM", "ms-BN", 
             
-            // 不支持或无本地商店的地区
+            // Regions that are unsupported or have no local store
             "ar-LB",
         };
 
-        // 合并市场并过滤
+        // Merge markets and filter
         var filteredMarkets = _storeViewModel.Markets
             .Union(MarketBuilder.BuildMarket2())
             .Where(m => !excludedLanguages.Contains(m.Code))
             .ToList();
 
-        // 构造 MarketMappingEntry 列表
+        // Build the MarketMappingEntry list
         var marketMappings = filteredMarkets
             .Select(m => new MarketMappingEntry(m.Name, m.Code))
             .ToList();
 
-        // 添加额外的区域项
+        // Add the extra region entry
         marketMappings.Add(new MarketMappingEntry(ResourceHelper.GetString("Store.PriceComparison.Eurozone"), "de-DE"));
 
-        // 最终排序并添加
+        // Sort and add the final list
         MarketMappings.AddRange(
             marketMappings.OrderBy(m => m.Market, StringComparer.CurrentCultureIgnoreCase));
 
@@ -300,7 +300,7 @@ public partial class PriceComparisonDialogViewModel : ObservableObject
 
         code = code.ToUpperInvariant();
 
-        // 遍历所有已知的区域（culture）来匹配货币代码
+        // Iterate over all known regions (cultures) to match the currency code
         var regions = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
             .Select(culture =>
             {
@@ -314,7 +314,7 @@ public partial class PriceComparisonDialogViewModel : ObservableObject
                 }
             })
             .Where(region => region != null)
-            .DistinctBy(region => region!.ISOCurrencySymbol); // 避免重复
+            .DistinctBy(region => region!.ISOCurrencySymbol); // Avoid duplicates
 
         return regions.Any(r => r!.ISOCurrencySymbol.Equals(code, StringComparison.OrdinalIgnoreCase));
     }

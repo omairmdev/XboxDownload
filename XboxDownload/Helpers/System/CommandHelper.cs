@@ -120,7 +120,7 @@ public static class CommandHelper
                 }
                 else
                 {
-                    // 退而求其次，尝试重启 nscd 或 dnsmasq
+                    // Fall back to restarting nscd or dnsmasq
                     _ = RunCommandAsync("systemctl", "restart nscd");
                     _ = RunCommandAsync("systemctl", "restart dnsmasq");
                 }
@@ -138,15 +138,15 @@ public static class CommandHelper
     {
         return CommandCache.GetOrAdd(commandName, name =>
         {
-            // 1. Windows 后缀处理
+            // 1. Windows: append .exe
             if (OperatingSystem.IsWindows() && !name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 name += ".exe";
 
-            // 2. 已经是全路径则直接校验
+            // 2. Already a full path: just check it exists
             if (Path.IsPathRooted(name))
                 return File.Exists(name) ? name : null;
 
-            // 3. 通用 PATH 搜索 (PathSeparator 自动处理 ; 或 :)
+            // 3. Search PATH (PathSeparator handles ; or :)
             return Environment.GetEnvironmentVariable("PATH")?
                 .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
                 .Select(p => Path.Combine(p, name))

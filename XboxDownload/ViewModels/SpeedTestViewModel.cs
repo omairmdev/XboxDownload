@@ -267,7 +267,7 @@ public partial class SpeedTestViewModel : ViewModelBase
     [RelayCommand]
     private void FilterByLocation()
     {
-        SearchLocation = SearchLocation.Replace("　", " ").Trim();
+        SearchLocation = SearchLocation.Replace("　", " ") /* full-width space */.Trim();
         if (!string.Equals(App.Settings.SearchLocation, SearchLocation))
         {
             App.Settings.SearchLocation = SearchLocation;
@@ -310,7 +310,7 @@ public partial class SpeedTestViewModel : ViewModelBase
     [RelayCommand]
     private void ApplyLocationFilter(string? region = null)
     {
-        // 全量刷新：region 为 null 或空
+        // Full refresh: region is null or empty
         if (string.IsNullOrEmpty(region))
         {
             var isOtherSelected = LocationFilters.FirstOrDefault(f => f.Key == "Other")?.IsSelected == true;
@@ -324,11 +324,11 @@ public partial class SpeedTestViewModel : ViewModelBase
 
             foreach (var ip in IpItems)
             {
-                // 如果命中已选中的已知地区关键词
+                // If it matches a selected known-region keyword
                 ip.IsSelected = knownFilters.Any(f =>
                     f.Keywords.Any(kw => ip.Location.Contains(kw, StringComparison.OrdinalIgnoreCase)));
 
-                // 如果是 Other 筛选器，并且没命中已知关键词，则设置为 true
+                // If this is the "Other" filter and no known keyword matched, set to true
                 if (!ip.IsSelected && isOtherSelected && knownKeywords != null)
                 {
                     ip.IsSelected = !knownKeywords.Any(kw => ip.Location.Contains(kw, StringComparison.OrdinalIgnoreCase));
@@ -337,7 +337,7 @@ public partial class SpeedTestViewModel : ViewModelBase
             return;
         }
 
-        // 局部更新：只更新特定区域
+        // Partial update: only update the given region
         var filter = LocationFilters.FirstOrDefault(f => f.IsVisible && f.Key == region);
         if (filter == null) return;
 
@@ -419,10 +419,10 @@ public partial class SpeedTestViewModel : ViewModelBase
         await ClipboardHelper.SetTextAsync(clipboard, exportContent);
 
         var lines = exportContent.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var count = lines.Count(line => !line.StartsWith('#')); // 排除以 # 开头的行（忽略前导空格）
+        var count = lines.Count(line => !line.StartsWith('#')); // Exclude lines starting with # (ignoring leading whitespace)
 
         var cnXboxDownloadHint = App.Settings.Culture == "zh-Hans" && exportContent.Contains(".xboxlive.cn") ?
-            $"{Environment.NewLine}提示：{Environment.NewLine}国内 Xbox 下载游戏可能会使用 .com 域名，{Environment.NewLine}此时需启用监听跳转方式才能加速下载。" :
+            $"{Environment.NewLine}Tip:{Environment.NewLine}Xbox in mainland China may download games from .com domains,{Environment.NewLine}so the listening-redirect mode must be enabled to accelerate those downloads." :
             "";
 
         await DialogHelper.ShowInfoDialogAsync(
@@ -557,7 +557,7 @@ public partial class SpeedTestViewModel : ViewModelBase
                 .Count(line => !string.IsNullOrWhiteSpace(line));
 
             var cnXboxDownloadHint = App.Settings.Culture == "zh-Hans" && dnsMapping.Contains(".xboxlive.cn") ?
-                $"{Environment.NewLine}提示：{Environment.NewLine}国内 Xbox 下载游戏可能会使用 .com 域名，{Environment.NewLine}此时需启用监听跳转方式才能加速下载。" :
+                $"{Environment.NewLine}Tip:{Environment.NewLine}Xbox in mainland China may download games from .com domains,{Environment.NewLine}so the listening-redirect mode must be enabled to accelerate those downloads." :
                 "";
 
             await DialogHelper.ShowInfoDialogAsync(
@@ -581,17 +581,17 @@ public partial class SpeedTestViewModel : ViewModelBase
         {
             var content = await File.ReadAllTextAsync(PathHelper.SystemHostsPath);
 
-            // 清理非正常退出残留内容
+            // Clean up leftovers from an abnormal exit
             if (!ServiceViewModel.IsListening && HostsHelper.RemoveAppSectionRegex().IsMatch(content))
             {
                 content = HostsHelper.RemoveAppSectionRegex().Replace(content, "").Trim();
                 await File.WriteAllTextAsync(PathHelper.SystemHostsPath, content);
             }
 
-            // 拆分为行
+            // Split into lines
             var lines = content.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
 
-            // 找出将被删除的行
+            // Find the lines that will be removed
             var removedLines = lines.Where(line => line.Contains($"# {nameof(XboxDownload)}")).ToList();
 
             if (removedLines.Count == 0)
@@ -603,7 +603,7 @@ public partial class SpeedTestViewModel : ViewModelBase
                 return;
             }
 
-            // 提示确认
+            // Ask for confirmation
             var preview = string.Join(Environment.NewLine, removedLines);
             var confirm = await DialogHelper.ShowConfirmDialogAsync(
                 ResourceHelper.GetString("SpeedTest.Dialog.ConfirmCleanupHostsTitle", nameof(XboxDownload)),
@@ -611,10 +611,10 @@ public partial class SpeedTestViewModel : ViewModelBase
                 Icon.Question);
             if (!confirm) return;
 
-            // 保留其余内容
+            // Keep the remaining content
             var cleaned = string.Join(Environment.NewLine, lines.Where(line => !line.Contains($"# {nameof(XboxDownload)}"))).Trim() + Environment.NewLine;
 
-            // 写回 hosts 文件
+            // Write back to the hosts file
             await File.WriteAllTextAsync(PathHelper.SystemHostsPath, cleaned);
         }
         catch (Exception ex)
@@ -647,7 +647,7 @@ public partial class SpeedTestViewModel : ViewModelBase
         ["IsFilterMatched"] = p => p.IsFilterMatched
     };
 
-    // 自定义多字段比较器
+    // Custom multi-field comparer
     private static MultiKeyComparer<IpItem> GetMultiComparer(List<(string Property, SortDirection Direction)> sortList)
     {
         var keys = new List<(Func<IpItem, IComparable?> Selector, SortDirection Direction)>();
@@ -660,14 +660,14 @@ public partial class SpeedTestViewModel : ViewModelBase
 
         if (keys.Count == 0)
         {
-            // 默认排序规则
+            // Default sort order
             keys.Add((p => p.Location, SortDirection.Ascending));
         }
 
         return new MultiKeyComparer<IpItem>(keys);
     }
 
-    // 多字段比较器实现
+    // Multi-field comparer implementation
     private class MultiKeyComparer<T>(List<(Func<T, IComparable?> Selector, SortDirection Direction)> keys) : IComparer<T>
     {
         public int Compare(T? x, T? y)
@@ -699,7 +699,7 @@ public partial class SpeedTestViewModel : ViewModelBase
     {
         if (string.IsNullOrEmpty(propertyName))
         {
-            // 清空排序规则，使用默认
+            // Clear sort rules and use the default
             _sortSubject.OnNext([("Location", SortDirection.Ascending)]);
             return;
         }
@@ -708,7 +708,7 @@ public partial class SpeedTestViewModel : ViewModelBase
 
         if (append)
         {
-            // 追加或替换已有属性排序方向
+            // Append or replace the sort direction of an existing property
             var index = currentSortList.FindIndex(s => s.Property == propertyName);
             if (index >= 0)
             {
@@ -721,7 +721,7 @@ public partial class SpeedTestViewModel : ViewModelBase
         }
         else
         {
-            // 只使用当前一个排序条件
+            // Use only the current sort criterion
             currentSortList = [(propertyName, direction)];
         }
 
@@ -730,7 +730,7 @@ public partial class SpeedTestViewModel : ViewModelBase
 
     private void ClearSort()
     {
-        ClearSortRequested?.Invoke(); // 通知 View 清除箭头
+        ClearSortRequested?.Invoke(); // Tell the View to clear the arrows
         _sortSubject.OnNext([("Location", SortDirection.Ascending)]);
     }
 
@@ -739,16 +739,16 @@ public partial class SpeedTestViewModel : ViewModelBase
     #region SpeedTest
 
     /// <summary>
-    /// 用于取消测速和下载链接获取的异步操作的令牌源。
+    /// Token source used to cancel the speed test and download-link retrieval.
     /// </summary>
     private CancellationTokenSource? _speedTestCancellation, _fetchAppDownloadUrlCancellation;
 
     /// <summary>
-    /// 开始对所有选中的 IP 项进行测速操作。
-    /// 测试开始后会禁用排序和导入功能，并清空排序状态。
-    /// 每个选中的 IP 将依次执行 Ping 和下载速度测试，
-    /// 所使用的 HTTP 请求头和 Range 长度将根据目标 URL 及导入类型自动调整。
-    /// 测试完成后，如果在中国大陆环境中，将尝试上传优选 Akamai 节点。
+    /// Starts speed-testing all selected IP entries.
+    /// Sorting and import are disabled while testing and the sort state is cleared.
+    /// Each selected IP is pinged and download-speed tested in turn;
+    /// the HTTP headers and Range length are adjusted automatically for the target URL and import type.
+    /// When finished, if running in mainland China, preferred Akamai nodes may be uploaded.
     /// </summary>
     [RelayCommand]
     private async Task StartSpeedTestAsync()
@@ -769,7 +769,7 @@ public partial class SpeedTestViewModel : ViewModelBase
         if (uri != null)
         {
 
-            var rangeTo = SelectedImportOption!.Key.StartsWith("Akamai") ? 31457279 : 52428799; //国外IP测试下载30M，国内IP测试下载50M
+            var rangeTo = SelectedImportOption!.Key.StartsWith("Akamai") ? 31457279 : 52428799; // Test 30 MB for foreign IPs, 50 MB for domestic IPs
             var timeout = TimeSpan.FromSeconds(SelectedTimeout);
             var userAgent = uri.Host.EndsWith(".nintendo.net") ? "XboxDownload/Nintendo NX" : "XboxDownload";
 
@@ -806,9 +806,9 @@ public partial class SpeedTestViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// 对单个 IP 项进行测速
+    /// Speed-tests a single IP entry
     /// </summary>
-    /// <param name="item">要进行测速的 IP 项。</param>
+    /// <param name="item">The IP entry to test.</param>
     [RelayCommand]
     private async Task RunSingleSpeedTestAsync(IpItem? item)
     {
@@ -822,7 +822,7 @@ public partial class SpeedTestViewModel : ViewModelBase
 
         if (uri != null)
         {
-            var rangeTo = SelectedImportOption!.Key.StartsWith("Akamai") ? 31457279 : 52428799; //国外IP测试下载30M，国内IP测试下载50M
+            var rangeTo = SelectedImportOption!.Key.StartsWith("Akamai") ? 31457279 : 52428799; // Test 30 MB for foreign IPs, 50 MB for domestic IPs
             var timeout = TimeSpan.FromSeconds(SelectedTimeout);
             var userAgent = uri.Host.EndsWith(".nintendo.net") ? "XboxDownload/Nintendo NX" : "XboxDownload";
 
@@ -842,12 +842,12 @@ public partial class SpeedTestViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// 确保当前设置的测速目标链接为合法的下载 URL。
-    /// 如果 <see cref="TargetTestUrl"/> 是有效的绝对地址则直接返回，
-    /// 否则尝试从默认的测速文件条目中获取地址，
-    /// 如为标识符则调用 <see cref="UpdateService.FetchAppDownloadUrlAsync"/> 生成下载地址。
+    /// Ensures the configured speed-test target is a valid download URL.
+    /// If <see cref="TargetTestUrl"/> is a valid absolute address it is returned as is;
+    /// otherwise the address is looked up in the default speed-test entries;
+    /// if it is an identifier, <see cref="UpdateService.FetchAppDownloadUrlAsync"/> builds the download address.
     /// </summary>
-    /// <returns>返回一个有效的下载 <see cref="Uri"/>，若无法获取则返回 <c>null</c>。</returns>
+    /// <returns>A valid download <see cref="Uri"/>, or <c>null</c> if none can be obtained.</returns>
     private async Task<Uri?> EnsureValidTargetTestUrlAsync()
     {
         if (Uri.TryCreate(TargetTestUrl, UriKind.Absolute, out var baseUri))
@@ -877,22 +877,22 @@ public partial class SpeedTestViewModel : ViewModelBase
     private readonly Dictionary<string, DateTime> _uploadedIpTimes = [];
 
     /// <summary>
-    /// 上传在中国大陆区域测速良好的 Akamai 节点信息。
-    /// 仅在启用上传功能、界面显示上传选项、当前语言为简体中文，
-    /// 且 IP 项中存在指定亚洲地区（如香港、日本等）测速大于等于 20 的节点时才会执行上传。
-    /// 上传前通过 API 判断是否处于中国大陆地区（排除港澳台）。
+    /// Uploads Akamai nodes that performed well in mainland China.
+    /// Only runs when uploading is enabled, the option is visible, the UI language is Simplified Chinese,
+    /// and an IP in a listed Asian region (e.g. Hong Kong, Japan) scored >= 20.
+    /// Before uploading, an API call checks the user is in mainland China (excluding HK/MO/TW).
     /// </summary>
     private async Task UploadPreferredAkamaiIpsIfInChinaAsync()
     {
-        // 若上传选项未显示、未启用上传功能，或当前语言非简体中文，则跳过上传逻辑
+        // Skip if the upload option is hidden/disabled or the language is not Simplified Chinese
         if (!(UploadAkamaiIpsVisible && UploadAkamaiIpsEnabled && App.Settings.Culture == "zh-Hans"))
             return;
 
-        // 优选区域：仅包含指定亚洲地区节点
-        var preferredRegions = new[] { "香港", "台湾", "日本", "韩国", "新加坡" };
+        // Preferred regions: only the listed Asian locations (matched against Chinese location names in the data)
+        var preferredRegions = new[] { "香港", "台湾", "日本", "韩国", "新加坡" }; // Hong Kong, Taiwan, Japan, South Korea, Singapore (the server data uses these Chinese names)
         var now = DateTime.UtcNow;
 
-        // 过滤：测速>=20，优选区域，且48小时内未上传过
+        // Filter: speed >= 20, preferred region, not uploaded within the last 48 hours
         var list = IpItems
             .Where(p =>
                 p.Speed >= 20 &&
@@ -901,18 +901,18 @@ public partial class SpeedTestViewModel : ViewModelBase
             )
             .ToList();
 
-        // 无满足条件的节点则直接返回
+        // Nothing qualifies: return
         if (list.Count == 0)
             return;
 
-        // 请求 API 获取本地地理位置信息（用于判断是否在中国大陆）
+        // Query an API for geolocation (to detect mainland China)
         var result = await IpGeoHelper.GetCountryFromMultipleApisAsync();
 
-        // 如果不在中国大陆，则跳过上传
+        // Not in mainland China: skip the upload
         if (!string.Equals(result, "CN", StringComparison.OrdinalIgnoreCase))
             return;
 
-        // 构建 JSON 数组，用于上传
+        // Build the JSON array to upload
         var jsonArray = new JsonArray();
         foreach (var item in list)
         {
@@ -925,7 +925,7 @@ public partial class SpeedTestViewModel : ViewModelBase
             _uploadedIpTimes[item.Ip] = now;
         }
 
-        // 发送 POST 请求上传到服务端接口
+        // POST it to the server endpoint
         using var response = await HttpClientHelper.SendRequestAsync(
             "Akamai/Better",
             "POST",

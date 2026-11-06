@@ -9,7 +9,7 @@
         x:CompileBindings="False"
         WindowStartupLocation="CenterOwner"
         Width="980" Height="250"
-        Title="Usb Device (MBR磁盘存在2TB分区限制，超出后的容量无法被使用)">
+        Title="Usb Device (MBR disks are limited to 2 TB; capacity beyond that cannot be used)">
 
     <Window.Resources>
         <converters:EnumToBoolConverter x:Key="EnumToBoolConverter"/>
@@ -21,49 +21,49 @@
                   ItemsSource="{Binding UsbDriveMappings}"
                   SelectedItem="{Binding SelectedEntry}">
             <DataGrid.Columns>
-                <DataGridTemplateColumn MinWidth="40" Header="编号">
+                <DataGridTemplateColumn MinWidth="40" Header="No.">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="dialog:UsbDriveDialogViewModel+UsbDriveMappingEntry">
                             <TextBlock Text="{Binding Index}" Margin="6,0" VerticalAlignment="Center"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Width="*" Header="型号">
+                <DataGridTemplateColumn Width="*" Header="Model">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="dialog:UsbDriveDialogViewModel+UsbDriveMappingEntry">
                             <TextBlock Text="{Binding Model}" Margin="6,0" VerticalAlignment="Center"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn MinWidth="40" Header="接口">
+                <DataGridTemplateColumn MinWidth="40" Header="Interface">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="dialog:UsbDriveDialogViewModel+UsbDriveMappingEntry">
                             <TextBlock Text="{Binding InterfaceType}" Margin="6,0" VerticalAlignment="Center"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn MinWidth="80" Header="容量">
+                <DataGridTemplateColumn MinWidth="80" Header="Capacity">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="dialog:UsbDriveDialogViewModel+UsbDriveMappingEntry">
                             <TextBlock Text="{Binding FormatSize}" Margin="6,0" VerticalAlignment="Center"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn MinWidth="40" Header="分区表">
+                <DataGridTemplateColumn MinWidth="40" Header="Partition table">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="dialog:UsbDriveDialogViewModel+UsbDriveMappingEntry">
                             <TextBlock Text="{Binding PartitionScheme}" Margin="6,0" VerticalAlignment="Center"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn MinWidth="40" Header="分区数">
+                <DataGridTemplateColumn MinWidth="40" Header="Partitions">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="dialog:UsbDriveDialogViewModel+UsbDriveMappingEntry">
                             <TextBlock Text="{Binding Partitions}" Margin="6,0" VerticalAlignment="Center"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn MinWidth="40" Header="盘符">
+                <DataGridTemplateColumn MinWidth="40" Header="Drive letter">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="dialog:UsbDriveDialogViewModel+UsbDriveMappingEntry">
                             <TextBlock Text="{Binding DriveLetter}" Margin="6,0" VerticalAlignment="Center"/>
@@ -75,11 +75,11 @@
 
         <Grid Grid.Row="1" Grid.Column="0" ColumnDefinitions="Auto,*,Auto">
             <Button Grid.Column="0" Classes="LinkLabel" Command="{Binding RefreshUsbDrivesCommand}">
-                <TextBlock Text="刷新" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                <TextBlock Text="Refresh" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
             </Button>
 
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
-                <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" Text="分区表类型"/>
+                <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" Text="Partition table type"/>
                 <RadioButton Content="GPT"
                              IsChecked="{Binding DiskPartitionType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Gpt}"/>
                 <RadioButton Content="MBR"
@@ -87,11 +87,11 @@
             </StackPanel>
         </Grid>
 
-        <Button Grid.Row="1" Grid.Column="1" MinWidth="80" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Content="重新分区"
+        <Button Grid.Row="1" Grid.Column="1" MinWidth="80" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Content="Repartition"
                 IsEnabled="{Binding IsEnabled}"
                 Command="{Binding RepartitionCommand}"/>
 
-        <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Text="分区过程中弹出格式化或者其它错误信息请忽略取消"/>
+        <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Text="If Windows pops up a format prompt or other error during partitioning, ignore or cancel it"/>
 
     </Grid>
 

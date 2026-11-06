@@ -328,6 +328,25 @@ publish_linux() {
 }
 
 # --------------------------------------------------
+# Non-interactive mode (used by CI):  ./publish.sh <rid> <output-name>
+#   e.g. ./publish.sh linux-x64 linux-x64
+#        ./publish.sh osx-arm64 macos-arm64
+#        ./publish.sh win-x64 windows-x64
+# --------------------------------------------------
+if [[ $# -gt 0 ]]; then
+    if [[ $# -ne 2 ]]; then
+        echo "Usage: $0 [<rid> <output-name>]" >&2
+        exit 2
+    fi
+    case "$1" in
+        win-x64|win-arm64|osx-x64|osx-arm64|linux-x64|linux-arm64) ;;
+        *) echo "[ERROR] Unsupported RID: $1" >&2; exit 2 ;;
+    esac
+    publish_target "$1" "$2"
+    exit 0
+fi
+
+# --------------------------------------------------
 # Main loop
 # --------------------------------------------------
 while true; do

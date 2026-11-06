@@ -1,40 +1,41 @@
-# OpenWrt 安装 Lighttpd、Nginx、Caddy，使用URL重写跳转国内CDN服务器加速下载
-提速原理请参考PC [Xbox下载助手](https://github.com/skydevil88/XboxDownload "Xbox下载助手")，同时支持PC微软商店加速。
-支持Docker路由器(小米、TP-LINK等部分型号)、NAS也可以通过Docker使用macvlan创建独立ip安装Nginx实现跳转国内下载。
+# Install Lighttpd, Nginx or Caddy on OpenWrt and use URL rewriting to redirect to the China CDN
 
-Xbox使用此方法需要关闭路由器IPv6功能，如果有其它设备需要用到IPv6，可以在 网络->防火墙->自定义规则 中添加以下规则屏蔽掉Xbox的IPv6。（AA:BB:CC:DD:EE:FF 替换成 Xbox Mac 地址）
+For the principle behind the speed-up see the PC app [XboxDownload](https://github.com/skydevil88/XboxDownload "XboxDownload"); it also accelerates PC Microsoft Store downloads.
+Routers that support Docker (some Xiaomi, TP-LINK models, etc.) and NAS devices can also run Nginx in Docker with a macvlan network (own IP address) to redirect to the China download servers.
+
+To use this method the router's IPv6 must be turned off for the Xbox. If other devices need IPv6, add the following rules under *Network → Firewall → Custom Rules* to block IPv6 for the Xbox only (replace `AA:BB:CC:DD:EE:FF` with the Xbox's MAC address):
 
 ```bash
 ip6tables -I INPUT -p udp -m mac --mac-source AA:BB:CC:DD:EE:FF --dport 547 -j DROP
 ip6tables -I INPUT -p icmpv6 -m mac --mac-source AA:BB:CC:DD:EE:FF -j DROP
 ```
 
-以下教程里面的 192.168.1.1 替换为您的Openwrt路由器的ip地址
+In the tutorials below replace `192.168.1.1` with the IP address of your OpenWrt router.
 
-## 方法一：Lighttpd 
-B站视频教程：https://www.bilibili.com/video/BV1wP4y1G7zf
+## Method 1: Lighttpd
+Video tutorial (Bilibili): https://www.bilibili.com/video/BV1wP4y1G7zf
 
-1. 修改uhttpd端口（修改后进入OpenWrt管理页面要用 192.168.1.1:8080，修改端口目的是要让出80端口给Lighttpd或者Nginx使用）
+1. Change the uhttpd port (afterwards the OpenWrt admin page is at `192.168.1.1:8080`; this frees port 80 for Lighttpd/Nginx)
 ```bash
 vi /etc/config/uhttpd
-#按 i 进入编辑模式，
-list listen_http '0.0.0.0:80' --> list listen_http '0.0.0.0:8080
+# Press i to enter insert mode,
+list listen_http '0.0.0.0:80' --> list listen_http '0.0.0.0:8080'
 list listen_http '[::]:80' --> list listen_http '[::]:8080'
-#按ESC键 跳到命令模式，然后输入 :wq 保存文件并退出vi, 重启uhttpd
+# Press ESC, type :wq to save and quit vi, then restart uhttpd
 /etc/init.d/uhttpd restart
 ```
-![图1](images/OpenWrp/Op1.png)
+![Fig 1](images/OpenWrp/Op1.png)
 
-2.安装 lighttpd
+2. Install lighttpd
 ```bash
 opkg update
 opkg install lighttpd lighttpd-mod-redirect lighttpd-mod-proxy
 ```
 
-3.配置 lighttpd
+3. Configure lighttpd
 ```bash
 vi /etc/lighttpd/lighttpd.conf
-#按 i 进入编辑模式，然后复制下面代码，Shift+Inset 粘贴，按ESC键 跳到命令模式，然后输入 :wq 保存文件并退出vi
+# Press i for insert mode, paste the code below (Shift+Insert), press ESC, type :wq to save and quit vi
 
 server.modules = ( "mod_redirect" )
 $HTTP["host"] =~ "^(assets1|assets2|d1|d2|xvcf1|xvcf2)\.xboxlive\.com$" {
@@ -43,19 +44,19 @@ $HTTP["host"] =~ "^(assets1|assets2|d1|d2|xvcf1|xvcf2)\.xboxlive\.com$" {
 $HTTP["host"] =~ "^(dlassets|dlassets2)\.xboxlive\.com$" {
 	url.redirect = ( "(.*)" => "http://dlassets.xboxlive.cn$1" )
 }
-#其它访问转发到8080端口，进入管理页面不需要加端口(可选)
+# (Optional) forward all other requests to port 8080 so the admin page works without a port number
 server.modules +=( "mod_proxy")
 proxy.server = ( "" => (( "host" => "127.0.0.1", "port" => 8080	)))
 
-#启动lighttpd服务以及设置其开机自启
+# Start lighttpd and enable it at boot
 /etc/init.d/lighttpd start
 /etc/init.d/lighttpd enable
-#重启lighttpd
+# Restart lighttpd
 /etc/init.d/lighttpd restart
 ```
-![图2](images/OpenWrp/Op2.png)
+![Fig 2](images/OpenWrp/Op2.png)
 
-4.打开OpenWrt管理页 网络-》主机名 ，添加 主机名：
+4. In the OpenWrt admin page go to *Network → Hostnames* and add these hostnames:
 ```bash
 xvcf1.xboxlive.com			192.168.1.1
 xvcf2.xboxlive.com			192.168.1.1
@@ -66,47 +67,49 @@ d2.xboxlive.com				192.168.1.1
 dlassets.xboxlive.com			192.168.1.1
 dlassets2.xboxlive.com			192.168.1.1
 
-#xxx.xxx.xxx.xxx 可以使用Xbox下载助手测速找出最快IP，分三组IP，目前国内IP大部分不通用，需要分别测速(Akamai IP可以通用)
-#第一组，主下载域名（PC主机共用）
+# Use the XboxDownload speed test to find the fastest IP for xxx.xxx.xxx.xxx. There are three groups of IPs; most China IPs
+# are not interchangeable between groups, so test each one (Akamai IPs work for all groups).
+# Group 1: main download domains (shared by PC and consoles)
 assets1.xboxlive.cn			xxx.xxx.xxx.xxx
 assets2.xboxlive.cn			xxx.xxx.xxx.xxx
 d1.xboxlive.cn				xxx.xxx.xxx.xxx
 d2.xboxlive.cn				xxx.xxx.xxx.xxx
 
-#第二组，XboxOne部分老游戏下载域名，PC、主机新游戏都不再使用此域名。
+# Group 2: download domains for some older Xbox One games (no longer used by new PC/console games)
 dlassets.xboxlive.cn			xxx.xxx.xxx.xxx
 dlassets2.xboxlive.cn			xxx.xxx.xxx.xxx
 
-#第三组，应用和部分PC游戏使用此域名下载
+# Group 3: apps and some PC games use these domains
 dl.delivery.mp.microsoft.com		xxx.xxx.xxx.xxx
 tlu.dl.delivery.mp.microsoft.com	xxx.xxx.xxx.xxx
 ```
 
-![图2](images/OpenWrp/Op3.png)
-![图3](images/SpeedTest.png)
+![Fig 3](images/OpenWrp/Op3.png)
+![Fig 4](images/SpeedTest.png)
 
 
-最后在浏览器中输入(电脑需要关闭IPv6，建议在 InPrivate 窗口中打开链接，避免浏览器缓存) http://xvcf1.xboxlive.com/Z/routing/extraextralarge.txt, 看到地址变成 http://assets1.xboxlive.cn/Z/routing/extraextralarge.txt 表示成功跳转到cn，接着打开你的Xbox又能愉快地下载。
+Finally, in a browser (turn IPv6 off on the PC, and preferably use a private/InPrivate window to avoid caching) open
+http://xvcf1.xboxlive.com/Z/routing/extraextralarge.txt . If the address changes to http://assets1.xboxlive.cn/Z/routing/extraextralarge.txt the redirect works; now start your Xbox and enjoy fast downloads.
 
 
 
 
 
-## 方法二：Nginx	
-注：部分使用了Nginx替换Uhttpd固件可以省略步骤 1、2 
-1. 修改uhttpd端口, 这次用管理页面直接修改(系统->Web管理)，端口改为8080保存重启。
-没有此页面可以参考上面Lighttpd修改uhttpd端口
-![图2.1](images/OpenWrp/Op2.1.png)
+## Method 2: Nginx
+Note: firmware that already uses Nginx instead of uhttpd can skip steps 1 and 2.
+1. Change the uhttpd port. This time use the admin page (*System → Web Admin*), set the port to 8080, save and reboot.
+If there is no such page, change the uhttpd port as described in the Lighttpd method.
+![Fig 2.1](images/OpenWrp/Op2.1.png)
 
-2. 重启后选择 系统->软件包，刷新列表，过滤器中输入 nginx 查找，找到后安装 nginx。
-![图2.2](images/OpenWrp/Op2.2.png)
-![图2.3](images/OpenWrp/Op2.3.png)
+2. After the reboot go to *System → Software*, refresh the package list, type `nginx` in the filter and install nginx.
+![Fig 2.2](images/OpenWrp/Op2.2.png)
+![Fig 2.3](images/OpenWrp/Op2.3.png)
 
-3. SSH连进路由器
+3. Connect to the router with SSH
 ```bash
 vi /etc/nginx/conf.d/xbox.conf
-#按 i 进入编辑模式，然后复制下面代码，Shift+Inset 粘贴，按ESC键 跳到命令模式，然后输入 :wq 保存文件并退出vi
-#启动报错可以增加以下一句，server_names_hash_bucket_size 64; 不够就按32倍数往上加(128、256)
+# Press i for insert mode, paste the code below (Shift+Insert), press ESC, type :wq to save and quit vi
+# If nginx fails to start, add: server_names_hash_bucket_size 64; and if that is not enough raise it in multiples of 32 (128, 256)
 
 server_names_hash_bucket_size 64;
 server {
@@ -120,16 +123,16 @@ server {
         }
 }
 
-#启动 nginx 服务以及设置其开机自启。
+# Start nginx and enable it at boot
 /etc/init.d/nginx start
 /etc/init.d/nginx enable
-#重启nginx
+# Restart nginx
 /etc/init.d/nginx restart
 ```
-![图2.4](images/OpenWrp/Op2.4.png)
-![图2.5](images/OpenWrp/Op2.5.png)
+![Fig 2.4](images/OpenWrp/Op2.4.png)
+![Fig 2.5](images/OpenWrp/Op2.5.png)
 
-4.打开OpenWrt管理页(http://192.168.1.1:8080) 网络-》主机名 ，添加 主机名：
+4. Open the OpenWrt admin page (http://192.168.1.1:8080), go to *Network → Hostnames* and add these hostnames:
 ```bash
 xvcf1.xboxlive.com			192.168.1.1
 xvcf2.xboxlive.com			192.168.1.1
@@ -140,34 +143,36 @@ d2.xboxlive.com				192.168.1.1
 dlassets.xboxlive.com			192.168.1.1
 dlassets2.xboxlive.com			192.168.1.1
 
-#xxx.xxx.xxx.xxx 可以使用Xbox下载助手测速找出最快IP，分 三组IP，目前国内IP大部分不通用，需要分别测速(Akamai IP可以通用)
-#第一组，主下载域名（PC主机共用）
+# Use the XboxDownload speed test to find the fastest IP for xxx.xxx.xxx.xxx. There are three groups of IPs; most China IPs
+# are not interchangeable between groups, so test each one (Akamai IPs work for all groups).
+# Group 1: main download domains (shared by PC and consoles)
 assets1.xboxlive.cn			xxx.xxx.xxx.xxx
 assets2.xboxlive.cn			xxx.xxx.xxx.xxx
 d1.xboxlive.cn				xxx.xxx.xxx.xxx
 d2.xboxlive.cn				xxx.xxx.xxx.xxx
 
-#第二组，XboxOne部分老游戏下载域名，PC、主机新游戏都不再使用此域名。
+# Group 2: download domains for some older Xbox One games (no longer used by new PC/console games)
 dlassets.xboxlive.cn			xxx.xxx.xxx.xxx
 dlassets2.xboxlive.cn			xxx.xxx.xxx.xxx
 
-#第二组，应用和部分PC游戏使用此域名下载
+# Group 3: apps and some PC games use these domains
 dl.delivery.mp.microsoft.com		xxx.xxx.xxx.xxx
 tlu.dl.delivery.mp.microsoft.com	xxx.xxx.xxx.xxx
 ```
 
-![图2](images/OpenWrp/Op3.png)
-![图3](images/SpeedTest.png)
+![Fig 3](images/OpenWrp/Op3.png)
+![Fig 4](images/SpeedTest.png)
 
 
-最后在浏览器中输入(电脑需要关闭IPv6，建议在 InPrivate 窗口中打开链接，避免浏览器缓存) http://xvcf1.xboxlive.com/Z/routing/extraextralarge.txt, 看到地址变成 http://assets1.xboxlive.cn/Z/routing/extraextralarge.txt 表示成功跳转到cn，接着打开你的Xbox又能愉快地下载。
+Finally, in a browser (turn IPv6 off on the PC, and preferably use a private/InPrivate window to avoid caching) open
+http://xvcf1.xboxlive.com/Z/routing/extraextralarge.txt . If the address changes to http://assets1.xboxlive.cn/Z/routing/extraextralarge.txt the redirect works; now start your Xbox and enjoy fast downloads.
 
-## 方法三：Caddy
+## Method 3: Caddy
 
 Caddyfile:
 
 ```
-http://assets1.xboxlive.com, http://assets1.xboxlive.com, http://d1.xboxlive.com, http://d2.xboxlive.com, http://xvcf1.xboxlive.com, http://xvcf2.xboxlive.com {
+http://assets1.xboxlive.com, http://assets2.xboxlive.com, http://d1.xboxlive.com, http://d2.xboxlive.com, http://xvcf1.xboxlive.com, http://xvcf2.xboxlive.com {
         redir http://assets1.xboxlive.cn{uri}
 }
 http://dlassets.xboxlive.com, http://dlassets2.xboxlive.com {
@@ -175,9 +180,7 @@ http://dlassets.xboxlive.com, http://dlassets2.xboxlive.com {
 }
 ```
 
-与方法一、二相同，在路由器中把 *.xboxlive.com 域名劫持到 Caddy 服务器 IP.
+As with methods 1 and 2, hijack the `*.xboxlive.com` domains in the router so they resolve to the Caddy server's IP.
 
-## 其它：IIS	
+## Other: IIS
 https://tieba.baidu.com/p/7151558145
-
-

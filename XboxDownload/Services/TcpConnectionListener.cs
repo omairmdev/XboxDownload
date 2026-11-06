@@ -537,7 +537,7 @@ public partial class TcpConnectionListener(ServiceViewModel serviceViewModel)
                             switch (host)
                             {
                                 case "www.msftconnecttest.com":
-                                    if (tmpPath.Equals("/connecttest.txt", StringComparison.CurrentCultureIgnoreCase)) // 网络连接 (NCSI)，修复 Xbox、Windows 系统网络正常却显示离线
+                                    if (tmpPath.Equals("/connecttest.txt", StringComparison.CurrentCultureIgnoreCase)) // Network connectivity test (NCSI): fixes Xbox/Windows showing "offline" while the network works
                                     {
                                         fileFound = true;
                                         var response = Encoding.ASCII.GetBytes("Microsoft Connect Test");
@@ -675,10 +675,14 @@ public partial class TcpConnectionListener(ServiceViewModel serviceViewModel)
                     };
                     XboxGameManager.Dictionary.AddOrUpdate(key, xboxGame, (_, _) => xboxGame);
                     _ = XboxGameManager.SaveAsync();
-                    _ = HttpClientHelper.GetStringContentAsync(
-                        $"Game/AddGameUrl?url={HttpUtility.UrlEncode(xboxGame.Url)}",
-                        method: "PUT", 
-                        name: HttpClientNames.XboxDownload);
+                    // Privacy: only report captured game URLs to the project's server if the user opted in.
+                    if (App.Settings.ShareGameUrls)
+                    {
+                        _ = HttpClientHelper.GetStringContentAsync(
+                            $"Game/AddGameUrl?url={HttpUtility.UrlEncode(xboxGame.Url)}",
+                            method: "PUT",
+                            name: HttpClientNames.XboxDownload);
+                    }
                 }
             }
         }

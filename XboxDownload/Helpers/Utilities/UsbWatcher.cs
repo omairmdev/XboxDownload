@@ -15,7 +15,7 @@ public class UsbWatcher : IDisposable
     [SupportedOSPlatform("windows")]
     public void Start()
     {
-        // 监听插入
+        // Watch for insertion
         var insertQuery = new WqlEventQuery("SELECT * FROM Win32_VolumeChangeEvent WHERE EventType = 2");
         _insertWatcher = new ManagementEventWatcher(insertQuery);
         _insertWatcher.EventArrived += (_, e) =>
@@ -28,7 +28,7 @@ public class UsbWatcher : IDisposable
         };
         _insertWatcher.Start();
 
-        // 监听移除
+        // Watch for removal
         var removeQuery = new WqlEventQuery("SELECT * FROM Win32_VolumeChangeEvent WHERE EventType = 3");
         _removeWatcher = new ManagementEventWatcher(removeQuery);
         _removeWatcher.EventArrived += (_, e) =>

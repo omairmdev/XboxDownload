@@ -240,10 +240,10 @@ public static class IpGeoHelper
                 if (string.IsNullOrWhiteSpace(country) || string.IsNullOrWhiteSpace(prov))
                     return null;
 
-                if (country != "中国")
+                if (country != "中国") // "China" (the ip9.com.cn API returns Chinese names)
                     return "NOT_CN";
 
-                if (prov.Contains("香港") || prov.Contains("澳门") || prov.Contains("台湾"))
+                if (prov.Contains("香港") || prov.Contains("澳门") || prov.Contains("台湾")) // Hong Kong / Macau / Taiwan
                     return "NOT_CN";
 
                 return "CN";

@@ -39,4 +39,17 @@ public class AppSettings
     public string AkamaiCdnIp { get; set; } = string.Empty;
     public string StoreRegion { get; set; } = string.Empty;
     public string CurrencyCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Security: when false (default) update/IP-list/rule downloads go directly to GitHub (or jsDelivr) over TLS.
+    /// When true, third-party GitHub mirror/proxy services (gh-proxy.com, ghproxy.net, *.skydevil.xyz) are raced as well,
+    /// which helps where GitHub is blocked but means you trust those mirrors with the data you receive.
+    /// </summary>
+    public bool AllowThirdPartyProxies { get; set; }
+
+    /// <summary>
+    /// Privacy: when true, captured Xbox game download URLs are reported to the project's web service
+    /// (xbox.skydevil.xyz) to build its public game-link database. Off by default.
+    /// </summary>
+    public bool ShareGameUrls { get; set; }
 }

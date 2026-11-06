@@ -244,6 +244,11 @@ public class HttpClientHelper
         if (string.IsNullOrWhiteSpace(url))
             return;
 
+        // Security: UseShellExecute would happily launch local files/other protocol handlers; only open web links.
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var parsedUrl) ||
+            parsedUrl.Scheme != Uri.UriSchemeHttp && parsedUrl.Scheme != Uri.UriSchemeHttps)
+            return;
+
         if (OperatingSystem.IsLinux() && Program.UnixUserIsRoot())
         {
             var topLevel = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop

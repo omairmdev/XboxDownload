@@ -131,7 +131,7 @@ public partial class ServiceViewModel : ObservableObject
             if (dic.TryGetValue(providerKey, out var provider) && provider == "SettingsProvider" &&
                 dic.TryGetValue(valueKey, out var value))
             {
-                sb.Append(ResourceHelper.GetString(resourceKey) + " " + format(value) + "，");
+                sb.Append(ResourceHelper.GetString(resourceKey) + " " + format(value) + ", ");
             }
         }
     }
