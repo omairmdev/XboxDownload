@@ -31,8 +31,14 @@ public static partial class UpdateService
 {
     public const string Website = "https://xbox.skydevil.xyz";
     public const string Project = "https://github.com/skydevil88/XboxDownload";
-    public static readonly string[] Proxies1 = ["https://gh-proxy.com/", "https://ghproxy.net/"];
-    private static readonly string[] Proxies2 = ["https://pxy1.skydevil.xyz/", "https://pxy2.skydevil.xyz/", ""];
+    // Third-party mirrors are only used when the user explicitly opts in (AppSettings.AllowThirdPartyProxies).
+    // The empty string means "direct connection to the original host".
+    public static string[] Proxies1 => App.Settings.AllowThirdPartyProxies
+        ? ["https://gh-proxy.com/", "https://ghproxy.net/"]
+        : [];
+    private static string[] Proxies2 => App.Settings.AllowThirdPartyProxies
+        ? ["https://pxy1.skydevil.xyz/", "https://pxy2.skydevil.xyz/", ""]
+        : [""];
     private const long MaxUpdatePackageBytes = 512L * 1024L * 1024L;
     private const long MultiThreadDownloadThresholdBytes = 32L * 1024L * 1024L;
     private const long MultiThreadDownloadPartBytes = 8L * 1024L * 1024L;
@@ -142,7 +148,8 @@ public static partial class UpdateService
 
         if (fastestUrl != null)
         {
-            var tempDirectory = Path.Combine(Path.GetTempPath(), nameof(XboxDownload));
+            // Random directory name: this process runs elevated, so avoid a predictable, pre-creatable temp path.
+            var tempDirectory = Path.Combine(Path.GetTempPath(), $"{nameof(XboxDownload)}-update-{Guid.NewGuid():N}");
             try
             {
                 if (Directory.Exists(tempDirectory))

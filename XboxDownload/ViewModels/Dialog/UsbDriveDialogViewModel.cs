@@ -88,7 +88,7 @@ public partial class UsbDriveDialogViewModel : ObservableObject
                 }
 
                 var m = Regex.Match(outputString, @"\s" + index + ".{43}(?<Gpt>.)");
-                var partitionScheme = m.Success ? m.Groups["Gpt"].Value == "*" ? "GPT" : "MBR" : "未知";
+                var partitionScheme = m.Success ? m.Groups["Gpt"].Value == "*" ? "GPT" : "MBR" : "Unknown";
                 var entry = new UsbDriveMappingEntry(index, model, interfaceType, serialNumber, size, partitionScheme, partitions, string.Join(',', driveLetters.ToArray()));
 
                 result.Add(entry);
@@ -110,8 +110,10 @@ public partial class UsbDriveDialogViewModel : ObservableObject
         var selectedEntry = SelectedEntry;
 
         var confirm = await DialogHelper.ShowConfirmDialogAsync(
-            "重新分区",
-            "确认要重新分区U盘吗？ \n\n⚠ 警告，此操作将删除U盘中的所有分区和文件!",
+            "Repartition",
+            "Are you sure you want to repartition this USB drive?\n\n" +
+            $"Disk {selectedEntry.Index}: {selectedEntry.Model} ({selectedEntry.DriveLetter})\n\n" +
+            "⚠ Warning: this will delete all partitions and files on the drive!",
             Icon.Question, false);
 
         if (!confirm) return;
@@ -132,7 +134,7 @@ public partial class UsbDriveDialogViewModel : ObservableObject
             await p.StandardInput.WriteLineAsync("select disk " + selectedEntry.Index);
             await p.StandardInput.WriteLineAsync("clean");
 
-            // 根据分区类型选择 MBR 或 GPT
+            // Choose MBR or GPT according to the selected partition scheme
             if (DiskPartitionType == PartitionScheme.Mbr)
                 await p.StandardInput.WriteLineAsync("convert mbr");
             else if (DiskPartitionType == PartitionScheme.Gpt)
@@ -142,42 +144,42 @@ public partial class UsbDriveDialogViewModel : ObservableObject
             //await p.StandardInput.WriteLineAsync("select partition 1");
             await p.StandardInput.WriteLineAsync("format fs=ntfs quick");
 
-            // 如果没有驱动器盘符，自动分配
+            // Assign a drive letter automatically if there is none
             if (string.IsNullOrEmpty(selectedEntry.DriveLetter))
             {
                 await p.StandardInput.WriteLineAsync("assign");
             }
 
-            // 将磁盘设置为在线
+            // Bring the disk online
             await p.StandardInput.WriteLineAsync("online disk");
-            // 清除只读属性
+            // Clear the read-only attribute
             await p.StandardInput.WriteLineAsync("attributes disk clear readonly");
 
             p.StandardInput.Close();
 
-            // 等待命令执行完成
+            // Wait for the commands to finish
             await p.WaitForExitAsync();
 
-            // 读取错误输出，捕获可能的错误信息
+            // Read error output to catch any error message
             var errorOutput = await p.StandardError.ReadToEndAsync();
 
-            // 如果有错误输出，显示给用户
+            // Show any error output to the user
             if (!string.IsNullOrEmpty(errorOutput))
             {
-                await DialogHelper.ShowInfoDialogAsync("Error", "磁盘操作错误：\n" + errorOutput, Icon.Error);
+                await DialogHelper.ShowInfoDialogAsync("Error", "Disk operation error:\n" + errorOutput, Icon.Error);
             }
             else
             {
-                // 如果没有错误输出，可以显示成功消息
-                await DialogHelper.ShowInfoDialogAsync("Success", "磁盘分区和格式化已成功完成。", Icon.Success);
+                // No error output: show a success message
+                await DialogHelper.ShowInfoDialogAsync("Success", "Disk partitioning and formatting completed successfully.", Icon.Success);
             }
         }
         catch (Exception ex)
         {
-            // 捕获并显示详细的异常信息
+            // Catch and show the detailed exception message
             await DialogHelper.ShowInfoDialogAsync(
                 "Error",
-                "重新分区失败，错误信息：\n" + ex.Message,
+                "Repartitioning failed. Error:\n" + ex.Message,
                 Icon.Error);
         }
 

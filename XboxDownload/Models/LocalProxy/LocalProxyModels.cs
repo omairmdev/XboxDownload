@@ -41,7 +41,7 @@ public partial class DohModels : ObservableObject
     }
 
     /// <summary>
-    /// 当 IsChecked 变化时触发
+    /// Raised when IsChecked changes
     /// </summary>
     public event EventHandler<bool>? CheckedChanged;
 }

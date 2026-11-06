@@ -153,7 +153,7 @@
     <x:String x:Key="Service.Bottom.LocalIp">Local IP</x:String>
     <x:String x:Key="Service.Bottom.LocalIpNote">Make sure Local IP and console are on the same subnet.</x:String>
     <x:String x:Key="Service.Bottom.Traffic">Traffic</x:String>
-    <x:String x:Key="Service.Bottom.AdapterInfo">Name: {0}&#x0a;Description: {1}&#x0a;Interface：{2}&#x0a;Speed: {3}</x:String>
+    <x:String x:Key="Service.Bottom.AdapterInfo">Name: {0}&#x0a;Description: {1}&#x0a;Interface: {2}&#x0a;Speed: {3}</x:String>
     <x:String x:Key="Service.Bottom.Logging">Logging</x:String>
     <x:String x:Key="Service.Bottom.ClearLogs">Clear Logs</x:String>
 

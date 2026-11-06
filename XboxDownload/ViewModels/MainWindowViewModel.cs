@@ -82,7 +82,7 @@ public partial class MainWindowViewModel(
         App.Settings.Culture = culture;
         SettingsManager.Save(App.Settings);
 
-        // 更新 ObservableCollection 语言
+        // Update the ObservableCollection language
         foreach (var filter in SpeedTestViewModel.LocationFilters)
         {
             filter.Display = ResourceHelper.GetString($"SpeedTest.{filter.Key}");

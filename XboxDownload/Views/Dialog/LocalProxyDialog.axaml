@@ -21,7 +21,7 @@
                     </HeaderedContentControl>
 
                     <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="6" MinWidth="180">
-                        <!-- 选择服务 -->
+                        <!-- Select service -->
                         <HeaderedContentControl Header="{DynamicResource Service.LocalProxy.SelectService}" Grid.Row="0">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="120">
                                 <ListBox ItemsSource="{Binding ProxyRules}">
@@ -43,7 +43,7 @@
                             </ScrollViewer>
                         </HeaderedContentControl>
 
-                        <!-- DoH 服务器 -->
+                        <!-- DoH server -->
                         <HeaderedContentControl Header="{Binding DoHServers}" Grid.Row="1">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" MinWidth="300" MaxHeight="240">
                                 <ListBox ItemsSource="{Binding DohModelsMappings}">
@@ -82,7 +82,7 @@
                             </Button>
                         </Grid>
                         
-                        <!-- 保存按钮靠底 -->
+                        <!-- Save button at the bottom -->
                         <Button Grid.Row="3" MinWidth="120" HorizontalAlignment="Center" HorizontalContentAlignment="Center"
                                 Content="{DynamicResource Service.LocalProxy.Save}"
                                 Command="{Binding SaveRulesCommand}"/>

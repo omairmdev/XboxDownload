@@ -200,6 +200,7 @@ public partial class HardDriveDialogViewModel : ObservableObject
 
         var confirm = await DialogHelper.ShowConfirmDialogAsync(
             ResourceHelper.GetString("Storage.FormatHardDrive.DialogFormatHardDriveTitle"),
+            $"Disk {selectedEntry.Index}: {selectedEntry.Model} ({selectedEntry.DriveLetter})\n\n" +
             ResourceHelper.GetString("Storage.FormatHardDrive.DialogFormatHardDriveMessage"),
             Icon.Question, false);
 
@@ -239,7 +240,7 @@ public partial class HardDriveDialogViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            // 捕获并显示详细的异常信息
+            // Catch and show the detailed exception message
             await DialogHelper.ShowInfoDialogAsync(
                 "Error",
                 string.Format(ResourceHelper.GetString("Storage.FormatHardDrive.FormatFailedMessage"), ex.Message),

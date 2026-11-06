@@ -131,7 +131,7 @@ public static class SpeedTestService
 
         var tasks = items.Select(async item =>
         {
-            await startSignal.Task; // 等待统一启动
+            await startSignal.Task; // Wait for the common start signal
 
             try
             {
@@ -169,7 +169,7 @@ public static class SpeedTestService
             // ignored
         }
 
-        // 返回结果
+        // Return the result
         return bag.Count >= 5 ? [.. bag] : [.. items.OrderBy(_ => Random.Shared.Next()).Take(30)];
     }
 
@@ -251,7 +251,7 @@ public static class SpeedTestService
                     totalBytes += bytesRead;
 
                     var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
-                    if (elapsedSeconds > 0.1) // 100毫秒阈值，防止除数过小导致数值异常
+                    if (elapsedSeconds > 0.1) // 100 ms threshold: avoids a tiny divisor producing absurd values
                     {
                         item.Speed = totalBytes / (1048576 * elapsedSeconds); // bytes to MiB per second
                     }

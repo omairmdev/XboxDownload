@@ -137,22 +137,22 @@ public partial class StorageViewModel : ObservableObject
                 if (string.IsNullOrWhiteSpace(deviceId))
                     continue;
 
-                // 读取 MBR
+                // Read the MBR
                 var mbrBytes = MbrHelper.ReadMbr(deviceId);
                 if (mbrBytes.Length != 512)
                     continue;
 
-                // ===== 检查 Disk Signature（偏移 0x1B8） =====
+                // ===== Check the disk signature (offset 0x1B8) =====
                 var mbrDiskSignature = mbrBytes.AsSpan(0x1B8, 4);
                 if (!mbrDiskSignature.SequenceEqual(MbrHelper.DiskSignatureBytes))
                     continue;
 
-                // 读取 MBR 尾部 2 个字节（偏移 0x1FE）
+                // Read the last 2 bytes of the MBR (offset 0x1FE)
                 var mbrBootSignature = mbrBytes.AsSpan(0x1FE, 2);
                 if (!(mbrBootSignature.SequenceEqual(MbrHelper.XboxMode) || mbrBootSignature.SequenceEqual(MbrHelper.PcMode)))
                     continue;
 
-                // 读取磁盘信息
+                // Read disk information
                 var index = Convert.ToInt32(mo["Index"] ?? -1);
                 var model = mo["Model"]?.ToString()?.Trim() ?? string.Empty;
                 var serialNumber = mo["SerialNumber"]?.ToString()?.Trim() ?? string.Empty;

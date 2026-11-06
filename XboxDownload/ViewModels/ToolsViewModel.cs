@@ -298,19 +298,19 @@ public partial class ToolsViewModel : ObservableObject, IDisposable
             if (driveInfo is { IsReady: true, DriveFormat: "NTFS" })
             {
                 if (File.Exists(SelectedUsbDrivePath + "$ConsoleGen8Lock"))
-                    UsbDriveStatus = $"当前U盘状态：{PlatformType.XboxOne.GetDescription()} 回国";
+                    UsbDriveStatus = $"Current USB status: {PlatformType.XboxOne.GetDescription()} - back to China region";
                 else if (File.Exists(SelectedUsbDrivePath + "$ConsoleGen8"))
-                    UsbDriveStatus = $"当前U盘状态：{PlatformType.XboxOne.GetDescription()} 出国";
+                    UsbDriveStatus = $"Current USB status: {PlatformType.XboxOne.GetDescription()} - leave China region";
                 else if (File.Exists(SelectedUsbDrivePath + "$ConsoleGen9Lock"))
-                    UsbDriveStatus = $"当前U盘状态：{PlatformType.XboxSeries.GetDescription()} 回国";
+                    UsbDriveStatus = $"Current USB status: {PlatformType.XboxSeries.GetDescription()} - back to China region";
                 else if (File.Exists(SelectedUsbDrivePath + "$ConsoleGen9"))
-                    UsbDriveStatus = $"当前U盘状态：{PlatformType.XboxSeries.GetDescription()} 出国";
+                    UsbDriveStatus = $"Current USB status: {PlatformType.XboxSeries.GetDescription()} - leave China region";
                 else
-                    UsbDriveStatus = "当前U盘状态：未转换";
+                    UsbDriveStatus = "Current USB status: not converted";
             }
             else
             {
-                UsbDriveStatus = "当前U盘状态：不是NTFS格式";
+                UsbDriveStatus = "Current USB status: not NTFS";
             }
         }
         else
@@ -348,21 +348,21 @@ public partial class ToolsViewModel : ObservableObject, IDisposable
 
         var drive = driveInfo.RootDirectory.FullName;
 
-        UsbDriveStatus = "当前U盘状态：制作中，请稍候..";
+        UsbDriveStatus = "Current USB status: working, please wait..";
         if (!driveInfo.IsReady || driveInfo.DriveFormat != "NTFS")
         {
             var size = UnitConverter.ConvertBytes(Convert.ToInt64(driveInfo.TotalSize));
             string title, message, cmd;
             if (driveInfo is { IsReady: true, DriveFormat: "FAT32" })
             {
-                title = "转换U盘格式";
-                message = "当前U盘格式 " + driveInfo.DriveFormat + "，是否把U盘转换为 NTFS 格式？\n\n注意，如果U盘有重要数据请先备份!\n\n当前U盘位置： " + drive + "，容量：" + size;
+                title = "Convert USB drive format";
+                message = "The USB drive is currently " + driveInfo.DriveFormat + ". Convert it to NTFS?\n\nNote: back up any important data first!\n\nUSB drive: " + drive + ", capacity: " + size;
                 cmd = $"/c convert {drive.TrimEnd('\\')} /fs:ntfs /x";
             }
             else
             {
-                title = "格式化U盘";
-                message = "当前U盘格式 " + (driveInfo.IsReady ? driveInfo.DriveFormat : "RAW") + "，是否把U盘格式化为 NTFS？\n\n警告，格式化将删除U盘中的所有文件!\n\n当前U盘位置： " + drive + "，容量：" + (driveInfo.IsReady ? size : "未知");
+                title = "Format USB drive";
+                message = "The USB drive is currently " + (driveInfo.IsReady ? driveInfo.DriveFormat : "RAW") + ". Format it as NTFS?\n\nWarning: formatting deletes ALL files on the drive!\n\nUSB drive: " + drive + ", capacity: " + (driveInfo.IsReady ? size : "unknown");
                 cmd = $"/c echo.|format {drive.TrimEnd('\\')} /fs:ntfs /q /y";
             }
             if (await DialogHelper.ShowConfirmDialogAsync(title, message, Icon.Question))
@@ -397,7 +397,7 @@ public partial class ToolsViewModel : ObservableObject, IDisposable
                 await using (File.Create(drive + (isUnlock ? "$ConsoleGen9" : "$ConsoleGen9Lock"))) { }
             }
 
-            if (RegexHelper.NonAsciiRegex().IsMatch(driveInfo.VolumeLabel)) //卷标含有非英文字符
+            if (RegexHelper.NonAsciiRegex().IsMatch(driveInfo.VolumeLabel)) // The volume label contains non-ASCII characters
             {
                 if (OperatingSystem.IsWindows())
                     driveInfo.VolumeLabel = "";
@@ -407,7 +407,7 @@ public partial class ToolsViewModel : ObservableObject, IDisposable
         {
             await DialogHelper.ShowInfoDialogAsync(
                 "Error",
-                "U盘不是NTFS格式，请重新格式化NTFS格式后再转换。",
+                "The USB drive is not NTFS. Please format it as NTFS and try again.",
                 Icon.Error);
         }
         OnSelectedUsbDrivePathChanged(SelectedUsbDrivePath);

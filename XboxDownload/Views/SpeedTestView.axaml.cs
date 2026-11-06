@@ -17,7 +17,7 @@ public partial class SpeedTestView : UserControl
 
         DataContextChanged += OnDataContextChanged;
 
-        // 双击行事件监听
+        // Row double-click handler
         MyDataGrid.AddHandler(InputElement.PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
     }
 
@@ -42,7 +42,7 @@ public partial class SpeedTestView : UserControl
         if (DataContext is not SpeedTestViewModel vm) return;
         vm.ClearSortRequested = ClearSortArrows;
 
-        // 监听 IsSortingEnabled 变化
+        // Watch IsSortingEnabled changes
         vm.PropertyChanged += (_, args) =>
         {
             if (args.PropertyName == nameof(vm.IsSortingEnabled))
